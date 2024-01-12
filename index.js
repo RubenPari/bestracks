@@ -2,6 +2,7 @@ const Koa = require("koa");
 const Router = require("koa-router");
 const session = require("koa-session");
 const SpotifyWebApi = require("spotify-web-api-node");
+const logger = require("./config/logger");
 
 require("dotenv").config();
 
@@ -142,6 +143,47 @@ router.get("/auth/logout", async (ctx) => {
   ctx.response.body = {
     message: "Successfully logged out",
   };
+});
+
+// ### User ###
+router.get("/user/top-tracks", async (ctx) => {
+  let topTracks = [];
+  let offset = 0;
+  const limit = 50;
+
+  logger.info('Inizio recupero delle tracce top.');
+
+  try {
+    let response;
+    do {
+      logger.info(`Esecuzione della chiamata API per le tracce top, offset: ${offset}`);
+
+      response = (await spotifyApi.getMyTopTracks({
+        limit: limit,
+        offset: offset,
+      })).body;
+
+      topTracks.push(...response.items);
+      offset += limit;
+
+    } while (response.items.length === limit);
+
+    logger.info('Recupero delle tracce top completato.');
+    logger.info(`Tracce recuperate: ${topTracks.length}`);
+
+  } catch(error) {
+    logger.error("Errore durante il recupero delle tracce top:", error.message);
+
+    ctx.response.status = 400;
+    ctx.response.body = {
+      message: "Error to get top tracks",
+      error: error.message,
+    };
+    return;
+  }
+
+  ctx.response.status = 200;
+  ctx.response.body = topTracks;
 });
 
 app.use(router.routes());
