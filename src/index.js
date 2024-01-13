@@ -3,46 +3,18 @@ const Router = require('koa-router');
 const session = require('koa-session');
 const SpotifyWebApi = require('spotify-web-api-node');
 const logger = require('./config/logger');
+const sessionConfig = require('./config/session');
+const {
+  CLIENT_ID, CLIENT_SECRET, REDIRECT_URI, SCOPES, PLAYLIST_TRACKS_TOP_50,
+} = require('./config/envVariable');
 
-require('dotenv').config();
-
+// setup koa with router
 const app = new Koa();
 const router = new Router();
 
+// setup koa-session
 app.keys = ['some secret hurr'];
-
-const sessionConfig = {
-  key: 'koa.sess',
-  maxAge: 86400000,
-  autoCommit: true,
-  overwrite: true,
-  httpOnly: true,
-  signed: true,
-  rolling: false,
-  renew: false,
-  secure: false,
-  sameSite: null,
-};
-
 app.use(session(sessionConfig, app));
-
-const SCOPES = process.env.SCOPES.split(',');
-const { CLIENT_ID } = process.env;
-const { CLIENT_SECRET } = process.env;
-const { REDIRECT_URI } = process.env;
-const { PLAYLIST_TRACKS_TOP_50 } = process.env;
-
-if (
-  !CLIENT_ID
-  || !CLIENT_SECRET
-  || !REDIRECT_URI
-  || !SCOPES
-  || !PLAYLIST_TRACKS_TOP_50
-) {
-  throw new Error(
-    'Missing environment variables: CLIENT_ID, CLIENT_SECRET, REDIRECT_URI, SCOPES, PLAYLIST_TRACKS_TOP_50',
-  );
-}
 
 const spotifyApi = new SpotifyWebApi({
   clientId: CLIENT_ID,
