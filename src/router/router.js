@@ -12,7 +12,7 @@ authRouter.get('/callback', authController.callback);
 authRouter.get('/logout', authController.logout);
 
 // ### USER ###
-userRouter.get('/top-tracks', userController.getTopTracks);
+userRouter.post('/top-tracks', userController.getTopTracks);
 
 module.exports = {
   authRouter,
