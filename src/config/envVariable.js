@@ -1,6 +1,3 @@
-// load environment variables
-require('dotenv').config();
-
 const SCOPES = process.env.SCOPES.split(',');
 const { CLIENT_ID } = process.env;
 const { CLIENT_SECRET } = process.env;
