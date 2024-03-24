@@ -18,5 +18,6 @@ app.use(userRouter.routes());
 app.use(userRouter.allowedMethods());
 
 app.listen(PORT, () => {
+  // eslint-disable-next-line no-console
   console.log(`server is running on port ${PORT}`);
 });

@@ -1,6 +1,11 @@
+/* eslint-disable no-await-in-loop */
 const logger = require('../config/logger');
 const spotifyApi = require('../config/spotifyClient');
-const { ID_PLAYLIST_TRACKS_TOP_50 } = require('../config/envVariable');
+const {
+  ID_PLAYLIST_TRACKS_TOP_50_SHORT,
+  ID_PLAYLIST_TRACKS_TOP_50_MEDIUM,
+  ID_PLAYLIST_TRACKS_TOP_50_LONG,
+} = require('../config/envVariable');
 
 const getTopTracksMedium = async (ctx) => {
   const topTracks = [];
@@ -18,10 +23,10 @@ const getTopTracksMedium = async (ctx) => {
       );
 
       response = (
-        // eslint-disable-next-line no-await-in-loop
         await spotifyApi.getMyTopTracks({
           limit,
           offset,
+          time_range: 'medium_term',
         })
       ).body;
 
@@ -52,7 +57,7 @@ const getTopTracksMedium = async (ctx) => {
 
     // get all older tracks from playlist
     const oldTracks = (
-      await spotifyApi.getPlaylistTracks(ID_PLAYLIST_TRACKS_TOP_50)
+      await spotifyApi.getPlaylistTracks(ID_PLAYLIST_TRACKS_TOP_50_MEDIUM)
     ).body.items;
 
     if (oldTracks.length === 0) logger.info('Non ci sono tracce da eliminare.');
@@ -62,7 +67,7 @@ const getTopTracksMedium = async (ctx) => {
       }));
 
       const isRemovedTracks = await spotifyApi.removeTracksFromPlaylist(
-        ID_PLAYLIST_TRACKS_TOP_50,
+        ID_PLAYLIST_TRACKS_TOP_50_MEDIUM,
         tracksToRemove,
       );
 
@@ -91,7 +96,7 @@ const getTopTracksMedium = async (ctx) => {
     }
 
     const isAddedTracks = await spotifyApi.addTracksToPlaylist(
-      ID_PLAYLIST_TRACKS_TOP_50,
+      ID_PLAYLIST_TRACKS_TOP_50_MEDIUM,
       topTracks.map((track) => track.uri),
     );
 
@@ -117,35 +122,23 @@ const getTopTracksMedium = async (ctx) => {
 
 const getTopTracksShort = async (ctx) => {
   const topTracks = [];
-  let offset = 0;
-  let total = 0;
   const limit = 50;
 
   logger.info('Inizio recupero delle tracce top.');
 
   try {
-    let response;
-    do {
-      logger.info(
-        `Esecuzione della chiamata API per le tracce top, offset: ${offset}`,
-      );
+    const response = (
+      await spotifyApi.getMyTopTracks({
+        limit,
+        time_range: 'short_term',
+      })
+    ).body;
 
-      response = (
-        // eslint-disable-next-line no-await-in-loop
-        await spotifyApi.getMyTopTracks({
-          limit,
-          offset,
-        })
-      ).body;
+    if (response.total === 0) {
+      throw new Error('No top tracks found');
+    }
 
-      if (response.total === 0) {
-        throw new Error('No top tracks found');
-      }
-
-      topTracks.push(...response.items);
-      total = response.total;
-      offset += limit;
-    } while (offset < total);
+    topTracks.push(...response.items);
 
     logger.info('Recupero delle tracce top completato.');
     logger.info(`Tracce recuperate: ${topTracks.length}`);
@@ -165,7 +158,7 @@ const getTopTracksShort = async (ctx) => {
 
     // get all older tracks from playlist
     const oldTracks = (
-      await spotifyApi.getPlaylistTracks(ID_PLAYLIST_TRACKS_TOP_50)
+      await spotifyApi.getPlaylistTracks(ID_PLAYLIST_TRACKS_TOP_50_SHORT)
     ).body.items;
 
     if (oldTracks.length === 0) logger.info('Non ci sono tracce da eliminare.');
@@ -175,7 +168,7 @@ const getTopTracksShort = async (ctx) => {
       }));
 
       const isRemovedTracks = await spotifyApi.removeTracksFromPlaylist(
-        ID_PLAYLIST_TRACKS_TOP_50,
+        ID_PLAYLIST_TRACKS_TOP_50_SHORT,
         tracksToRemove,
       );
 
@@ -204,7 +197,7 @@ const getTopTracksShort = async (ctx) => {
     }
 
     const isAddedTracks = await spotifyApi.addTracksToPlaylist(
-      ID_PLAYLIST_TRACKS_TOP_50,
+      ID_PLAYLIST_TRACKS_TOP_50_SHORT,
       topTracks.map((track) => track.uri),
     );
 
@@ -230,35 +223,23 @@ const getTopTracksShort = async (ctx) => {
 
 const getTopTracksLong = async (ctx) => {
   const topTracks = [];
-  let offset = 0;
-  let total = 0;
   const limit = 50;
 
   logger.info('Inizio recupero delle tracce top.');
 
   try {
-    let response;
-    do {
-      logger.info(
-        `Esecuzione della chiamata API per le tracce top, offset: ${offset}`,
-      );
+    const response = (
+      await spotifyApi.getMyTopTracks({
+        limit,
+        time_range: 'long_term',
+      })
+    ).body;
 
-      response = (
-        // eslint-disable-next-line no-await-in-loop
-        await spotifyApi.getMyTopTracks({
-          limit,
-          offset,
-        })
-      ).body;
+    if (response.total === 0) {
+      throw new Error('No top tracks found');
+    }
 
-      if (response.total === 0) {
-        throw new Error('No top tracks found');
-      }
-
-      topTracks.push(...response.items);
-      total = response.total;
-      offset += limit;
-    } while (offset < total);
+    topTracks.push(...response.items);
 
     logger.info('Recupero delle tracce top completato.');
     logger.info(`Tracce recuperate: ${topTracks.length}`);
@@ -278,7 +259,7 @@ const getTopTracksLong = async (ctx) => {
 
     // get all older tracks from playlist
     const oldTracks = (
-      await spotifyApi.getPlaylistTracks(ID_PLAYLIST_TRACKS_TOP_50)
+      await spotifyApi.getPlaylistTracks(ID_PLAYLIST_TRACKS_TOP_50_LONG)
     ).body.items;
 
     if (oldTracks.length === 0) logger.info('Non ci sono tracce da eliminare.');
@@ -288,7 +269,7 @@ const getTopTracksLong = async (ctx) => {
       }));
 
       const isRemovedTracks = await spotifyApi.removeTracksFromPlaylist(
-        ID_PLAYLIST_TRACKS_TOP_50,
+        ID_PLAYLIST_TRACKS_TOP_50_LONG,
         tracksToRemove,
       );
 
@@ -317,7 +298,7 @@ const getTopTracksLong = async (ctx) => {
     }
 
     const isAddedTracks = await spotifyApi.addTracksToPlaylist(
-      ID_PLAYLIST_TRACKS_TOP_50,
+      ID_PLAYLIST_TRACKS_TOP_50_LONG,
       topTracks.map((track) => track.uri),
     );
 
